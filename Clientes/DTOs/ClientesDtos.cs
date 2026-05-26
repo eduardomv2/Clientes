@@ -6,7 +6,8 @@ public record RegistroUsuarioDto(
     string? ApellidoMaterno,
     string Email,
     string Password,
-    DateOnly FechaNacimiento
+    DateOnly FechaNacimiento,
+    DireccionRegistroDto? Direccion
 );
 
 public record LoginDto(
@@ -20,6 +21,13 @@ public record DireccionDto(
     string Colonia,
     string CodigoPostal,
     bool EsPrincipal
+);
+
+public record DireccionRegistroDto(
+    int IdCiudad,
+    string CalleNumero,
+    string Colonia,
+    string CodigoPostal
 );
 
 public record CreditoDto(

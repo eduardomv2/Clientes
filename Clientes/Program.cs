@@ -124,6 +124,11 @@ app.MapPost("/api/clientes/registro", async (
         return Results.Conflict(new
         { error = "Ya existe una cuenta con ese correo." });
 
+    // Validar dirección
+    if (dto.Direccion is null)
+        return Results.BadRequest(new
+        { error = "La dirección de entrega es obligatoria." });
+
     var usuario = new CLI_Usuario
     {
         Nombre = dto.Nombre,
@@ -137,6 +142,21 @@ app.MapPost("/api/clientes/registro", async (
     };
 
     db.Usuarios.Add(usuario);
+    await db.SaveChangesAsync();
+
+    // Guardar dirección
+    var direccion = new CLI_Direccion
+    {
+        IdUsuario = usuario.Id,
+        IdCiudad = dto.Direccion.IdCiudad,
+        CalleNumero = dto.Direccion.CalleNumero,
+        Colonia = dto.Direccion.Colonia,
+        CodigoPostal = dto.Direccion.CodigoPostal,
+        EsPrincipal = true,
+        Status = 1
+    };
+
+    db.Direcciones.Add(direccion);
     await db.SaveChangesAsync();
 
     return Results.Created(
@@ -210,6 +230,31 @@ app.MapGet("/api/clientes/{id:int}", async (
 .WithName("ObtenerUsuario")
 .WithTags("Clientes")
 .WithSummary("Obtiene perfil completo del usuario");
+
+// GET /api/clientes/{id}/direccion-principal
+app.MapGet("/api/clientes/{id:int}/direccion-principal", async (
+    int id,
+    ClientesDbContext db) =>
+{
+    var direccion = await db.Direcciones
+        .Include(d => d.Ciudad)
+        .FirstOrDefaultAsync(d => d.IdUsuario == id && d.EsPrincipal && d.Status == 1);
+
+    if (direccion is null)
+        return Results.NotFound(new { error = "No se encontró dirección principal." });
+
+    return Results.Ok(new
+    {
+        direccion.Id,
+        direccion.CalleNumero,
+        direccion.Colonia,
+        direccion.CodigoPostal,
+        Ciudad = direccion.Ciudad.Nombre
+    });
+})
+.WithName("ObtenerDireccionPrincipal")
+.WithTags("Clientes")
+.WithSummary("Obtiene la dirección principal del usuario");
 
 // POST /api/clientes/{id}/direcciones
 app.MapPost("/api/clientes/{id:int}/direcciones", async (
