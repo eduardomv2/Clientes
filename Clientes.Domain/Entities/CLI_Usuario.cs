@@ -18,5 +18,7 @@ namespace Clientes.Domain.Entities
 
         public ICollection<CLI_Direccion> Direcciones { get; set; } = [];
         public CLI_PerfilCredito? PerfilCredito { get; set; }
+
+        public decimal TotalComprasDebito { get; set; } = 0m;
     }
 }

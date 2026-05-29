@@ -14,6 +14,8 @@ public class ClientesDbContext : DbContext
     public DbSet<CLI_Direccion> Direcciones => Set<CLI_Direccion>();
     public DbSet<CLI_PerfilCredito> PerfilesCredito => Set<CLI_PerfilCredito>();
 
+    public DbSet<CLI_MovimientoCredito> MovimientosCredito => Set<CLI_MovimientoCredito>();
+
     protected override void OnModelCreating(ModelBuilder m)
     {
         m.Entity<CLI_Cat_Estado>(e =>
@@ -74,6 +76,19 @@ public class ClientesDbContext : DbContext
             e.HasOne(x => x.Usuario)
              .WithOne(u => u.PerfilCredito)
              .HasForeignKey<CLI_PerfilCredito>(x => x.IdUsuario)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        m.Entity<CLI_MovimientoCredito>(e =>
+        {
+            e.ToTable("CLI_MovimientoCredito");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Tipo).IsRequired().HasMaxLength(20);
+            e.Property(x => x.Descripcion).IsRequired().HasMaxLength(200);
+            e.Property(x => x.Monto).HasColumnType("decimal(18,2)");
+            e.HasOne(x => x.Usuario)
+             .WithMany()
+             .HasForeignKey(x => x.IdUsuario)
              .OnDelete(DeleteBehavior.Cascade);
         });
     }
